@@ -70,10 +70,19 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
-  cmd.desiredThrustsN[0] = mass * 9.81f / 4.f; // front left
-  cmd.desiredThrustsN[1] = mass * 9.81f / 4.f; // front right
-  cmd.desiredThrustsN[2] = mass * 9.81f / 4.f; // rear left
-  cmd.desiredThrustsN[3] = mass * 9.81f / 4.f; // rear right
+  // Check misc/1.propellers.forces.png and misc/2.propellers.moments.png equations
+  // Having that F1 = k_f * omega_1^2 and tau_1 = -k_m * omega_1^2,
+  // We get tau_1 = -k_m * F1 / k_f = kappa * -F1 (equation 1)
+  float l = L / sqrtf(2.f);
+  float tau_x = momentCmd.x / l; // tau_x = (F1-F2-F3+F4) * l
+  float tau_y = momentCmd.y / l; // tau_y = (F1+F2-F3-F4) * l
+  float tau_z = -momentCmd.z * kappa; // kappa = K_f/K_m; tau_z = tau_1 + tau_2 + tau_3 + tau_4 = (F1-F2+F3-F4)*(1/kappa) from above (equation_1)
+  float total_thrust = collThrustCmd; // F1+F2+F3+F4
+
+  cmd.desiredThrustsN[0] = ( tau_x + tau_y + tau_z + total_thrust) / 4.f;// front left F1
+  cmd.desiredThrustsN[1] = (-tau_x + tau_y - tau_z + total_thrust) / 4.f;// front right F2
+  cmd.desiredThrustsN[2] = ( tau_x - tau_y - tau_z + total_thrust) / 4.f;// rear left F3
+  cmd.desiredThrustsN[3] = (-tau_x - tau_y + tau_z + total_thrust) / 4.f;// rear right F4
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -98,7 +107,10 @@ V3F QuadControl::BodyRateControl(V3F pqrCmd, V3F pqr)
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
-  
+  // Check misc/3.bodyrate.png equations
+
+  V3F I(Ixx, Iyy, Izz);
+  momentCmd = I * kpPQR * (pqrCmd - pqr);
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -161,8 +173,6 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
-
-
   /////////////////////////////// END STUDENT CODE ////////////////////////////
   
   return thrust;
@@ -198,8 +208,6 @@ V3F QuadControl::LateralPositionControl(V3F posCmd, V3F velCmd, V3F pos, V3F vel
   V3F accelCmd = accelCmdFF;
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
-  
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
