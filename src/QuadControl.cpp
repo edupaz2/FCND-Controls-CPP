@@ -76,7 +76,7 @@ VehicleCommand QuadControl::GenerateMotorCommands(float collThrustCmd, V3F momen
   float l = L / sqrtf(2.f);
   float tau_x = momentCmd.x / l; // tau_x = (F1-F2-F3+F4) * l
   float tau_y = momentCmd.y / l; // tau_y = (F1+F2-F3-F4) * l
-  float tau_z = -momentCmd.z * kappa; // kappa = K_f/K_m; tau_z = tau_1 + tau_2 + tau_3 + tau_4 = (F1-F2+F3-F4)*(1/kappa) from above (equation_1)
+  float tau_z = -momentCmd.z / kappa; // kappa = K_f/K_m; tau_z = tau_1 + tau_2 + tau_3 + tau_4 = (F1-F2+F3-F4)*(1/kappa) from above (equation_1)
   float total_thrust = collThrustCmd; // F1+F2+F3+F4
 
   cmd.desiredThrustsN[0] = ( tau_x + tau_y + tau_z + total_thrust) / 4.f;// front left F1
